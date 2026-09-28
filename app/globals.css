@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3f5f7;
+  --foreground: #0f172a;
+  --navy: #0e2744;
+  --navy-deep: #0a1c33;
+  --brand-red: #e10600;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-navy-deep: var(--navy-deep);
+  --color-brand-red: var(--brand-red);
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-noto-serif);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.goog-logo-link,
+.skiptranslate,
+.goog-te-gadget,
+.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-te-balloon,
+.goog-tooltip,
+.VIpgJd-yAWNEb-L7lbkb,
+.VIpgJd-ZVi9od-ORHb,
+iframe.skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-text-highlight,
+font,
+font font {
+  background: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
+@keyframes breaking-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.breaking-ticker-track {
+  animation: breaking-ticker 28s linear infinite;
+}
+
+.group:hover .breaking-ticker-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breaking-ticker-track {
+    animation: none;
+  }
+}

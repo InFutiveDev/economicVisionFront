@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "items": [
+    {
+      "id": "bn-1",
+      "headline": "RBI announces liquidity support after late-session market swings",
+      "href": "#",
+      "sortOrder": 1,
+      "active": true
+    },
+    {
+      "id": "bn-2",
+      "headline": "Rupee moves to 83.12 against the US dollar",
+      "href": "#",
+      "sortOrder": 2,
+      "active": true
+    },
+    {
+      "id": "bn-3",
+      "headline": "Markets react as banking stocks lead a broad-based rally",
+      "href": "#",
+      "sortOrder": 3,
+      "active": true
+    }
+  ]
+}
