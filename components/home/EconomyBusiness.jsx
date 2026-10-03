@@ -29,9 +29,9 @@ const columns = [
 ];
 
 const tools = [
-  { name: "SIP Calculator", blurb: "Plan your investments", tone: "red", icon: "calc" },
-  { name: "Loan Calculator", blurb: "Check your eligibility", tone: "blue", icon: "card" },
-  { name: "Tax Calculator", blurb: "Estimate your tax", tone: "red", icon: "tax" },
+  { name: "SIP Calculator", blurb: "Plan your investments", tone: "red", icon: "calc", href: "/tools/sip-calculator" },
+  { name: "Loan Calculator", blurb: "Check your eligibility", tone: "blue", icon: "card", href: "/tools/loan-calculator" },
+  { name: "Tax Calculator", blurb: "Estimate your tax", tone: "red", icon: "tax", href: "/tools/income-tax-calculator" },
 ];
 
 export default function EconomyBusiness() {
@@ -90,7 +90,7 @@ function ToolsCard() {
       <ul className="mt-4">
         {tools.map((tool) => (
           <li key={tool.name} className="border-b border-slate-100 last:border-b-0">
-            <Link href="#" className="group flex items-center gap-3 py-3.5">
+            <Link href={tool.href} className="group flex items-center gap-3 py-3.5">
               <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                   tool.tone === "blue" ? "bg-sky-50 text-[#3b82f6]" : "bg-red-50 text-brand-red"

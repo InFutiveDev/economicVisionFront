@@ -15,9 +15,9 @@ const featured = {
 };
 
 const tools = [
-  { name: "SIP Calculator", blurb: "See how a monthly SIP compounds." },
-  { name: "EMI Calculator", blurb: "Plan home, auto and personal loans." },
-  { name: "Tax Calculator", blurb: "Compare old vs new regime in minutes." },
+  { name: "SIP Calculator", blurb: "See how a monthly SIP compounds.", href: "/tools/sip-calculator" },
+  { name: "EMI Calculator", blurb: "Plan home, auto and personal loans.", href: "/tools/loan-calculator" },
+  { name: "Tax Calculator", blurb: "Compare old vs new regime in minutes.", href: "/tools/income-tax-calculator" },
 ];
 
 export default function MoneySection() {
@@ -66,7 +66,7 @@ export default function MoneySection() {
           {tools.map((tool) => (
             <Link
               key={tool.name}
-              href="#"
+              href={tool.href}
               className="border border-slate-200 bg-[#f8fafc] px-4 py-4 transition hover:border-navy"
             >
               <p className="text-[14px] font-bold text-navy">{tool.name}</p>

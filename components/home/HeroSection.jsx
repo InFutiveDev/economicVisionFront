@@ -195,7 +195,7 @@ export default function HeroSection() {
         </div>
       </article>
 
-      <aside className="min-w-0">
+      <aside className="min-w-0 px-4 sm:px-0">
         <div className="flex items-center justify-between py-2">
           <h2 className="text-[18px] font-bold uppercase tracking-tight text-navy">Top Stories</h2>
         </div>

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { moreLinks, navLinks } from "./navLinks";
+import { moreLinks, navLinks, toolsLinks } from "./navLinks";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -31,6 +31,13 @@ export default function Navbar() {
             </Link>
           )
         )}
+        <NavDropdown
+          label="Tools"
+          items={toolsLinks}
+          pathname={pathname}
+          align="right"
+          splitBefore="Retirement Calculator"
+        />
         <NavDropdown
           label="More"
           items={moreLinks}

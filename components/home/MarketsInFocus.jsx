@@ -65,12 +65,12 @@ export default function MarketsInFocus() {
             >
               <div className="relative z-10">
                 <p className="text-[13px] font-medium text-navy">{item.name}</p>
-                <p className="mt-1 text-[20px] font-bold tabular-nums leading-none tracking-tight text-navy lg:text-[22px]">
+                <p className="mt-1 text-[18px] sm:text-[20px] lg:text-[22px] font-bold tabular-nums leading-none tracking-tight text-navy">
                   {item.value}
                 </p>
                 <p className="mt-1.5 text-[12px] font-bold text-[#16a34a]">▲ {item.change}</p>
               </div>
-              <div className="pointer-events-none absolute bottom-0 right-0 h-[70%] w-[58%]">
+              <div className="pointer-events-none absolute bottom-0 right-0 h-[30%] w-[58%] sm:h-[70%] sm:w-[58%] lg:h-[70%] lg:w-[58%]">
                 <AreaSpark path={sparkPaths[index]} gid={`${uid}g${index}`} />
               </div>
             </article>

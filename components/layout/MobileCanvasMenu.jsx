@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
-import { moreLinks, navLinks } from "./navLinks";
+import { moreLinks, navLinks, toolsLinks } from "./navLinks";
 import GoogleTranslate from "./GoogleTranslate";
 
 export default function MobileCanvasMenu({ open, onClose }) {
+  const [mounted, setMounted] = useState(false);
+  const [openSection, setOpenSection] = useState(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) setOpenSection(null);
+  }, [open]);
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -23,9 +35,15 @@ export default function MobileCanvasMenu({ open, onClose }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, onClose]);
 
-  return (
+  function toggleSection(id) {
+    setOpenSection((current) => (current === id ? null : id));
+  }
+
+  if (!mounted) return null;
+
+  return createPortal(
     <div
-      className={`fixed inset-0 z-50 lg:hidden ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+      className={`fixed inset-0 z-[100] lg:hidden ${open ? "pointer-events-auto" : "pointer-events-none"}`}
       aria-hidden={!open}
     >
       <button
@@ -39,7 +57,7 @@ export default function MobileCanvasMenu({ open, onClose }) {
 
       <aside
         id="mobile-canvas-menu"
-        className={`absolute left-0 top-0 flex h-full w-[82%] max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
+        className={`absolute left-0 top-0 flex h-full w-[86%] max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-out ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         role="dialog"
@@ -68,42 +86,47 @@ export default function MobileCanvasMenu({ open, onClose }) {
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {navLinks.map((link) => (
-            <div key={link.label}>
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
+          {navLinks.map((link) =>
+            link.children ? (
+              <MobileAccordion
+                key={link.label}
+                id={link.label}
+                label={link.label}
+                items={link.children}
+                open={openSection === link.label}
+                onToggle={() => toggleSection(link.label)}
+                onClose={onClose}
+              />
+            ) : (
               <Link
+                key={link.label}
                 href={link.href}
                 onClick={onClose}
                 className="block rounded-md px-3 py-3 text-base font-medium text-navy hover:bg-slate-50"
               >
                 {link.label}
               </Link>
-              {link.children?.map((child) => (
-                <Link
-                  key={child.label}
-                  href={child.href}
-                  onClick={onClose}
-                  className="block rounded-md px-3 py-2 pl-6 text-[14px] text-slate-600 hover:bg-slate-50 hover:text-brand-red"
-                >
-                  {child.label}
-                </Link>
-              ))}
-            </div>
-          ))}
+            )
+          )}
 
-          <p className="mt-3 px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-            More
-          </p>
-          {moreLinks.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              onClick={onClose}
-              className="block rounded-md px-3 py-2.5 text-[15px] font-medium text-navy hover:bg-slate-50"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <MobileAccordion
+            id="Tools"
+            label="Tools"
+            items={toolsLinks}
+            open={openSection === "Tools"}
+            onToggle={() => toggleSection("Tools")}
+            onClose={onClose}
+          />
+
+          <MobileAccordion
+            id="More"
+            label="More"
+            items={moreLinks}
+            open={openSection === "More"}
+            onToggle={() => toggleSection("More")}
+            onClose={onClose}
+          />
 
           <div className="my-3 border-t border-slate-200" />
 
@@ -115,7 +138,9 @@ export default function MobileCanvasMenu({ open, onClose }) {
             <MicIcon />
             Podcast
           </Link>
-          <GoogleTranslate variant="menu" />
+          <div className="px-1 py-2">
+            <GoogleTranslate variant="menu" />
+          </div>
         </nav>
 
         <div className="flex gap-3 border-t border-slate-200 p-4">
@@ -135,6 +160,51 @@ export default function MobileCanvasMenu({ open, onClose }) {
           </Link>
         </div>
       </aside>
+    </div>,
+    document.body
+  );
+}
+
+function MobileAccordion({ id, label, items, open, onToggle, onClose }) {
+  return (
+    <div className="border-b border-slate-100 last:border-b-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`flex w-full items-center justify-between rounded-md px-3 py-3 text-left text-base font-medium transition ${
+          open ? "bg-slate-50 text-brand-red" : "text-navy hover:bg-slate-50"
+        }`}
+        aria-expanded={open}
+        aria-controls={`mobile-subnav-${id}`}
+      >
+        {label}
+        <svg
+          viewBox="0 0 12 12"
+          className={`h-3 w-3 shrink-0 text-slate-400 transition-transform duration-200 ${open ? "rotate-180 text-brand-red" : ""}`}
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path d="M2.2 4.2a.75.75 0 011.06 0L6 6.94l2.74-2.74a.75.75 0 111.06 1.06L6.53 8.53a.75.75 0 01-1.06 0L2.2 5.26a.75.75 0 010-1.06z" />
+        </svg>
+      </button>
+      <div
+        id={`mobile-subnav-${id}`}
+        hidden={!open}
+        className="overflow-hidden"
+      >
+        <div className="mb-2 ml-3 border-l-2 border-slate-200 py-1">
+          {items.map((child) => (
+            <Link
+              key={child.label}
+              href={child.href}
+              onClick={onClose}
+              className="block rounded-md px-4 py-2.5 text-[14px] text-slate-600 hover:bg-slate-50 hover:text-brand-red"
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

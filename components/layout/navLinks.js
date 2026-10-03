@@ -41,6 +41,18 @@ export const navLinks = [
   { href: "#", label: "Opinion" },
 ];
 
+export const toolsLinks = [
+  { href: "/tools/compound-interest-calculator", label: "Compound Interest Calculator" },
+  { href: "/tools/income-tax-calculator", label: "Income Tax Calculator" },
+  { href: "/tools/inflation-calculator", label: "Inflation Calculator" },
+  { href: "/tools/retirement-calculator", label: "Retirement Calculator" },
+  { href: "/tools/gst-calculator", label: "GST Calculator" },
+  { href: "/tools/lumpsum-calculator", label: "Lumpsum Calculator" },
+  { href: "/tools/sip-calculator", label: "SIP Calculator" },
+  { href: "/tools/loan-calculator", label: "Loan Calculator" },
+  
+  
+];
 export const moreLinks = [
   { href: "#", label: "Mutual Funds" },
   { href: "#", label: "IPO" },
