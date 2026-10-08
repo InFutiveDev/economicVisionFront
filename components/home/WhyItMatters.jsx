@@ -27,10 +27,13 @@ const impacts = [
   },
 ];
 
-export default function WhyItMatters({
-  items = impacts,
-  href = "/article/markets-rally-as-banking-stocks-lead-gains",
-}) {
+const ICONS = { people: "people", investor: "chart", business: "briefcase", economy: "bank" };
+
+export default function WhyItMatters({ items }) {
+  const cards = items?.length
+    ? items.map((item) => ({ ...item, icon: ICONS[String(item.key).toLowerCase()] || "bank" }))
+    : impacts;
+
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -46,8 +49,12 @@ export default function WhyItMatters({
       </div>
 
       <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {items.map((item) => (
-          <Link key={item.key} href={href} className="group min-w-0 rounded-lg border border-slate-200 p-4 hover:bg-slate-50">
+        {cards.map((item, index) => (
+          <Link
+            key={`${item.key}-${index}`}
+            href={item.href || "#"}
+            className="group min-w-0 rounded-lg border border-slate-200 p-4 hover:bg-slate-50"
+          >
             <span className="flex items-center gap-2 text-navy">
               <ImpactIcon name={item.icon} />
               <span className="text-[14px] font-bold uppercase tracking-[0.06em]">{item.key}</span>

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import CoverImage from "@/components/media/CoverImage";
 
 const exclusiveStories = [
   {
@@ -37,7 +37,21 @@ const exclusiveStories = [
   },
 ];
 
-export default function ExclusiveSection() {
+const TYPE_CLASSES = {
+  EXCLUSIVE: "bg-brand-red text-white",
+  EXPLAINER: "bg-blue-600 text-white",
+  ANALYSIS: "bg-purple-600 text-white",
+};
+
+export default function ExclusiveSection({ items }) {
+  const stories = items?.length
+    ? items.map((item) => ({
+        ...item,
+        type: (item.type || "EXCLUSIVE").toUpperCase(),
+        typeClass: TYPE_CLASSES[(item.type || "").toUpperCase()] || TYPE_CLASSES.EXCLUSIVE,
+      }))
+    : exclusiveStories;
+
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       {/* Header */}
@@ -65,23 +79,21 @@ export default function ExclusiveSection() {
 
       {/* Stories */}
       <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-3">
-        {exclusiveStories.map((story, index) => (
+        {stories.map((story, index) => (
           <Link
-            key={story.title}
-            href={story.href}
+            key={story.href !== "#" ? story.href : story.title}
+            href={story.href || "#"}
             className={`group relative p-4 sm:p-5 ${
-              index !== exclusiveStories.length - 1
+              index !== stories.length - 1
                 ? "border-b border-slate-200 lg:border-b-0 lg:border-r"
                 : ""
             }`}
           >
             {/* Image */}
             <div className="relative aspect-[16/8.5] overflow-hidden rounded-lg bg-slate-100">
-              <Image
+              <CoverImage
                 src={story.image}
                 alt={story.title}
-                fill
-                className="object-cover"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
 

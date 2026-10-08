@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { navLinks } from "./navLinks";
+import SubscribeForm from "@/components/subscribe/SubscribeForm";
 
 const exploreItems = [...navLinks, { href: "/epaper", label: "E-Paper" }];
 
@@ -94,31 +95,7 @@ export default function Footer() {
             Get the latest news, insights and market updates, straight to your inbox.
           </p>
 
-          <form className="mt-4 flex items-center gap-2" onSubmit={(event) => event.preventDefault()}>
-            <label className="flex h-10 min-w-0 flex-1 items-center gap-2 rounded-full bg-white px-3">
-              <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <rect x="3" y="5" width="18" height="14" rx="2" />
-                <path d="M3 7l9 6 9-6" />
-              </svg>
-              <input
-                type="email"
-                required
-                placeholder="Enter your email address"
-                className="min-w-0 flex-1 bg-transparent text-[13px] text-navy outline-none placeholder:text-slate-400"
-              />
-            </label>
-            <button
-              type="submit"
-              className="h-10 shrink-0 rounded-full bg-brand-red px-4 text-[13px] font-semibold hover:bg-red-700"
-            >
-              Subscribe
-            </button>
-          </form>
-
-          <label className="mt-3 flex items-center gap-2 text-[12px] font-regular text-white">
-            <input type="checkbox" className="accent-brand-red" />
-            I agree to receive newsletters and updates.
-          </label>
+          <SubscribeForm variant="footer" source="footer" />
 
           <h4 className="mt-5 text-[16px] font-bold">Follow Us</h4>
           <div className="mt-2.5 flex items-center gap-2">

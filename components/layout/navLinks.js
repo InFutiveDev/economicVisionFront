@@ -41,6 +41,28 @@ export const navLinks = [
   { href: "#", label: "Opinion" },
 ];
 
+// Categories with a dedicated page keep linking there instead of the generic category listing.
+const PAGE_OVERRIDES = { markets: "/markets" };
+
+export function buildNavLinks(categories) {
+  if (!categories?.length) return navLinks;
+  return [
+    { href: "/", label: "Home" },
+    ...categories.map((category) => {
+      const href = PAGE_OVERRIDES[category.slug] || category.href;
+      if (!category.children?.length) return { href, label: category.name };
+      return {
+        href,
+        label: category.name,
+        children: [
+          { href, label: `All ${category.name}` },
+          ...category.children.map((child) => ({ href: child.href, label: child.name })),
+        ],
+      };
+    }),
+  ];
+}
+
 export const toolsLinks = [
   { href: "/tools/compound-interest-calculator", label: "Compound Interest Calculator" },
   { href: "/tools/income-tax-calculator", label: "Income Tax Calculator" },
@@ -62,7 +84,7 @@ export const moreLinks = [
   { href: "#", label: "Employment" },
   { href: "#", label: "Delhi/NCR" },
   { href: "#", label: "Crypto" },
-  { href: "#", label: "Podcasts" },
-  { href: "#", label: "Stories" },
+  { href: "/media#podcasts", label: "Podcasts" },
+  { href: "/media#stories", label: "Stories" },
   { href: "/epaper", label: "E-Paper" },
 ];

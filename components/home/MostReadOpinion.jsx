@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
+import CoverImage from "@/components/media/CoverImage";
 import SectionHeader from "./SectionHeader";
 import StoryTypeLabel from "@/components/article/StoryTypeLabel";
 
-const mostRead = [
+const fallbackMostRead = [
   "Sensex Rallies 800 Points as FIIs Pump ₹12,000 Cr into Equities",
   "RBI Holds Repo Rate at 6.50%, Signals Caution on Inflation",
   "New vs Old Tax Regime: Which Option Saves You More in FY26?",
@@ -11,7 +11,7 @@ const mostRead = [
   "Tata Group Plans ₹1 Lakh Crore Investment in Green Energy",
 ];
 
-const featured = {
+const fallbackFeatured = {
   author: "Meera Iyer",
   role: "Consulting Editor",
   title: "Why India's consumption slowdown is more structural than cyclical",
@@ -19,7 +19,7 @@ const featured = {
   image: "/image/opinion-featured.jpg",
 };
 
-const opinions = [
+const fallbackOpinions = [
   {
     author: "Arjun Malhotra",
     role: "Markets Strategist",
@@ -46,16 +46,21 @@ const opinions = [
   },
 ];
 
-export default function MostReadOpinion({ showMostRead = true }) {
+export default function MostReadOpinion({ showMostRead = true, opinion, mostReadItems }) {
+  const [featured, ...opinions] = opinion?.length ? opinion.slice(0, 4) : [fallbackFeatured, ...fallbackOpinions];
+  const mostRead = mostReadItems?.length
+    ? mostReadItems
+    : fallbackMostRead.map((title) => ({ title, href: "#" }));
+
   return (
     <section className="space-y-8">
       {showMostRead ? (
         <div>
           <SectionHeader title="Most Viewed" cta="View All →" />
           <ol className="divide-y divide-slate-200">
-            {mostRead.map((title, index) => (
-              <li key={title}>
-                <Link href="#" className="group flex gap-4 py-3 first:pt-0">
+            {mostRead.map(({ title, href }, index) => (
+              <li key={href !== "#" ? href : title}>
+                <Link href={href || "#"} className="group flex gap-4 py-3 first:pt-0">
                   <span className="w-8 shrink-0 text-2xl font-extrabold leading-none text-brand-red">
                     {index + 1}
                   </span>
@@ -80,19 +85,17 @@ export default function MostReadOpinion({ showMostRead = true }) {
             </div>
             
           </div>
-          <Link href="/media" className="shrink-0 text-[12px] text-[#7b8ba3] hover:text-brand-red">
+          <Link href="/category/opinion" className="shrink-0 text-[12px] text-[#7b8ba3] hover:text-brand-red">
             View All →
           </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
-          <Link href="#" className="group min-w-0">
+          <Link href={featured.href || "#"} className="group min-w-0">
             <div className="relative h-[180px] overflow-hidden rounded-md bg-slate-200 sm:h-[240px]">
-              <Image
+              <CoverImage
                 src={featured.image}
                 alt={featured.author}
-                fill
-                className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
               {/* <span className="absolute bottom-3 left-3">
@@ -102,7 +105,7 @@ export default function MostReadOpinion({ showMostRead = true }) {
             <p className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
               <StoryTypeLabel type="Opinion" />
               {featured.author}{" "}
-              <span className="font-medium text-slate-400">· {featured.role}</span>
+              {featured.role ? <span className="font-medium text-slate-400">· {featured.role}</span> : null}
             </p>
             <h3 className="mt-1.5 font-serif text-[18px] font-bold leading-snug text-navy group-hover:text-brand-red">
               {featured.title}
@@ -113,17 +116,17 @@ export default function MostReadOpinion({ showMostRead = true }) {
 
           <ul className="divide-y divide-slate-200">
             {opinions.map((item) => (
-              <li key={item.title}>
-                <Link href="#" className="group flex items-start gap-3 mt-3 first:pt-0 last:pb-0">
+              <li key={item.href || item.title}>
+                <Link href={item.href || "#"} className="group flex items-start gap-3 mt-3 first:pt-0 last:pb-0">
                   <div className="relative h-[70px] w-[70px] shrink-0 overflow-hidden rounded-md bg-slate-200 sm:h-[76px] sm:w-[76px]">
-                    <Image src={item.image} alt={item.author} fill className="object-cover object-top" sizes="76px" />
+                    <CoverImage src={item.image} alt={item.author} className="object-cover object-top" sizes="76px" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2 text-[11px]">
                       <StoryTypeLabel type="Opinion" />
                       <span>
                         {item.author}{" "}
-                        <span className="font-medium text-slate-400">· {item.role}</span>
+                        {item.role ? <span className="font-medium text-slate-400">· {item.role}</span> : null}
                       </span>
                     </p>
                     <h3 className="mt-1 font-serif text-[13px] font-bold leading-snug text-navy group-hover:text-brand-red">

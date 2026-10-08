@@ -1,32 +1,46 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import CoverImage from "@/components/media/CoverImage";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { fetchCategoryHub, selectHubEntry } from "@/lib/redux/slices/categoryHubSlice";
 
 const columns = [
   {
+    slug: "economy",
     title: "Economy",
-    topics: ["Top", "Policy", "GDP", "Inflation", "Trade", "More"],
-    image: "/image/hub-economy.jpg",
-    headline: "Indian economy shows strong growth momentum in Q2",
-    summary: "Experts say robust domestic demand and higher exports may keep the momentum alive.",
+    topics: ["GDP", "Inflation", "GST", "Jobs", "Trade"],
+    placeholder: {
+      image: "/image/hub-economy.jpg",
+      title: "Indian economy shows strong growth momentum in Q2",
+      excerpt: "Experts say robust domestic demand and higher exports may keep the momentum alive.",
+    },
   },
   {
+    slug: "business",
     title: "Business",
-    topics: ["Top", "Companies", "Markets", "Deals", "Startups"],
-    image: "/image/hub-business.jpg",
-    headline: "Tata Group plans ₹1.2 lakh crore investment in next 5 years",
-    summary: "The investment will focus on clean energy, semiconductors and new-age businesses.",
+    topics: ["Corporate", "Startups", "MSME", "Real Estate", "Auto"],
+    placeholder: {
+      image: "/image/hub-business.jpg",
+      title: "Tata Group plans ₹1.2 lakh crore investment in next 5 years",
+      excerpt: "The investment will focus on clean energy, semiconductors and new-age businesses.",
+    },
   },
   {
+    slug: "money",
     title: "Money",
-    topics: ["Top", "Mutual Funds", "Personal Finance", "Tax", "More"],
-    image: "/image/hub-money.jpg",
-    headline: "Small savings schemes continue to attract strong inflows",
-    summary: "SIPs and fixed deposits remain popular choices for retail investors.",
+    topics: ["Tax", "SIP", "Mutual Funds", "Insurance", "Loans", "Retirement"],
+    placeholder: {
+      image: "/image/hub-money.jpg",
+      title: "Small savings schemes continue to attract strong inflows",
+      excerpt: "SIPs and fixed deposits remain popular choices for retail investors.",
+    },
   },
 ];
+
+const toSlug = (name) =>
+  name.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
 const tools = [
   { name: "SIP Calculator", blurb: "Plan your investments", tone: "red", icon: "calc", href: "/tools/sip-calculator" },
@@ -45,41 +59,97 @@ export default function EconomyBusiness() {
   );
 }
 
-function HubCard({ title, topics, image, headline, summary }) {
-  const [active, setActive] = useState("Top");
+function HubCard({ slug, title, topics, placeholder }) {
+  const dispatch = useAppDispatch();
+  const [active, setActive] = useState("");
+  const top = useAppSelector(selectHubEntry(slug));
+  const current = useAppSelector(selectHubEntry(slug, active));
+
+  useEffect(() => {
+    dispatch(fetchCategoryHub({ slug, sub: active }));
+  }, [dispatch, slug, active]);
+
+  const category = top?.category;
+  const tabs = [
+    { name: "Top", slug: "" },
+    ...(category?.children?.length
+      ? category.children.map((child) => ({ name: child.name, slug: child.slug }))
+      : topics.map((name) => ({ name, slug: toSlug(name) }))),
+  ];
+  const activeTab = tabs.find((tab) => tab.slug === active) || tabs[0];
+  const categoryHref = category?.href || `/category/${slug}`;
+  const loading = !current || current.status === "loading";
 
   return (
     <article className="rounded-xl border border-slate-200 bg-white p-3.5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-[16px] font-extrabold uppercase tracking-[0.04em] text-navy">{title}</h2>
-        <Link href="#" className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7b8ba3] hover:text-brand-red">
+        <Link href={categoryHref} className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#7b8ba3] hover:text-brand-red">
           View All →
         </Link>
       </div>
       <div className="mt-2 flex flex-nowrap gap-x-3 overflow-x-auto">
-        {topics.map((topic) => (
+        {tabs.map((tab) => (
           <button
-            key={topic}
+            key={tab.slug || "top"}
             type="button"
-            onClick={() => setActive(topic)}
+            onClick={() => setActive(tab.slug)}
+            aria-pressed={activeTab.slug === tab.slug}
             className={`shrink-0 pb-1 text-[12px] ${
-              active === topic
+              activeTab.slug === tab.slug
                 ? "border-b-2 border-brand-red font-semibold text-brand-red"
                 : "font-medium text-slate-400 hover:text-navy"
             }`}
           >
-            {topic}
+            {tab.name}
           </button>
         ))}
       </div>
-      <Link href="#" className="group mt-2.5 block">
-        <div className="relative h-[92px] overflow-hidden rounded-md bg-slate-200">
-          <Image src={image} alt={headline} fill className="object-cover" sizes="260px" />
+      {loading ? (
+        <HubSkeleton />
+      ) : current.article ? (
+        <HubStory
+          href={current.article.href}
+          image={current.article.coverImage}
+          title={current.article.title}
+          excerpt={current.article.excerpt}
+        />
+      ) : active ? (
+        <div className="mt-2.5 flex h-[180px] flex-col items-center justify-center rounded-md bg-slate-50 px-4 text-center">
+          <p className="text-[13px] font-semibold text-navy">No {activeTab.name} stories yet.</p>
+          <Link href={categoryHref} className="mt-2 text-[12px] font-semibold text-brand-red hover:underline">
+            See all {title} news →
+          </Link>
         </div>
-        <h3 className="mt-2.5 font-serif text-[15px] font-bold leading-snug text-navy group-hover:text-brand-red">{headline}</h3>
-        <p className="mt-1.5 text-[12px] leading-relaxed text-slate-500">{summary}</p>
-      </Link>
+      ) : (
+        <HubStory href={categoryHref} {...placeholder} />
+      )}
     </article>
+  );
+}
+
+function HubStory({ href, image, title, excerpt }) {
+  return (
+    <Link href={href} className="group mt-2.5 block">
+      <div className="relative h-[92px] overflow-hidden rounded-md bg-slate-200">
+        <CoverImage src={image} alt={title} sizes="260px" />
+      </div>
+      <h3 className="mt-2.5 line-clamp-2 font-serif text-[15px] font-bold leading-snug text-navy group-hover:text-brand-red">
+        {title}
+      </h3>
+      {excerpt ? <p className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-slate-500">{excerpt}</p> : null}
+    </Link>
+  );
+}
+
+function HubSkeleton() {
+  return (
+    <div className="mt-2.5 animate-pulse" aria-hidden="true">
+      <div className="h-[92px] rounded-md bg-slate-200" />
+      <div className="mt-3 h-4 w-11/12 rounded bg-slate-200" />
+      <div className="mt-2 h-4 w-2/3 rounded bg-slate-200" />
+      <div className="mt-3 h-3 w-full rounded bg-slate-100" />
+    </div>
   );
 }
 

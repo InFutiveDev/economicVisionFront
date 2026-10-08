@@ -1,6 +1,10 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
+import CoverImage from "@/components/media/CoverImage";
+import SmartLink from "@/components/media/SmartLink";
 
 const videos = [
   {
@@ -41,8 +45,51 @@ const videos = [
   },
 ];
 
-export default function Videos({ compact = false }) {
-  const [featured, ...rest] = videos;
+const FILE_VIDEO = /\.(mp4|webm|ogg|mov|m3u8)(\?|#|$)/i;
+
+function playSource(video) {
+  if (video?.embedUrl) {
+    const join = video.embedUrl.includes("?") ? "&" : "?";
+    return { kind: "embed", src: `${video.embedUrl}${join}autoplay=1&rel=0&playsinline=1` };
+  }
+  if (video?.url && FILE_VIDEO.test(video.url)) {
+    return { kind: "file", src: video.url };
+  }
+  return null;
+}
+
+function keyOf(video, index) {
+  return video.id || `${video.title}-${index}`;
+}
+
+export default function Videos({ items, compact = false }) {
+  const list = (items?.length ? items : videos).slice(0, compact ? 6 : 7);
+  const [activeKey, setActiveKey] = useState(null);
+  const [playing, setPlaying] = useState(false);
+
+  const activeIndex = Math.max(
+    0,
+    list.findIndex((video, index) => keyOf(video, index) === activeKey)
+  );
+  const featured = list[activeIndex];
+  const rest = list
+    .map((video, index) => ({ video, key: keyOf(video, index) }))
+    .filter((_, index) => index !== activeIndex);
+
+  if (!featured) return null;
+
+  const source = playing ? playSource(featured) : null;
+
+  const playFeatured = () => {
+    if (playSource(featured)) setPlaying(true);
+  };
+
+  const select = (key, video) => (event) => {
+    if (!playSource(video)) return;
+    event.preventDefault();
+    setActiveKey(key);
+    setPlaying(true);
+  };
 
   if (compact) {
     return (
@@ -57,31 +104,34 @@ export default function Videos({ compact = false }) {
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <Link href="#" className="group min-w-0">
-            <div className="relative h-[220px] overflow-hidden rounded-md bg-slate-200">
-              <Image src={featured.image} alt={featured.title} fill className="object-cover" sizes="280px" />
-              <PlayBadge featured />
-              <Duration label={featured.duration} />
-            </div>
-            <h3 className="mt-2 font-serif text-[13px] font-bold leading-snug text-navy group-hover:text-brand-red">
-              {featured.title}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">{featured.summary}</p>
-          </Link>
+          <FeaturedVideo
+            video={featured}
+            source={source}
+            onPlay={playFeatured}
+            frameClass="relative h-[220px] overflow-hidden rounded-md bg-slate-200"
+            sizes="280px"
+            badge={<PlayBadge featured />}
+            titleClass="mt-2 font-serif text-[13px] font-bold leading-snug text-navy group-hover:text-brand-red"
+            summaryClass="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500"
+          />
 
           <ul className="flex flex-col gap-2.5 self-start">
-            {rest.map((video) => (
-              <li key={video.title}>
-                <Link href="#" className="group flex items-center gap-2.5">
+            {rest.map(({ video, key }) => (
+              <li key={key}>
+                <SmartLink
+                  href={video.url || "#"}
+                  onClick={select(key, video)}
+                  className="group flex items-center gap-2.5"
+                >
                   <div className="relative h-[44px] w-[72px] shrink-0 overflow-hidden rounded-md bg-slate-200">
-                    <Image src={video.image} alt={video.title} fill className="object-cover" sizes="72px" />
+                    <CoverImage src={video.image} alt={video.title} sizes="72px" />
                     <PlayBadge />
                     <Duration label={video.duration} compact />
                   </div>
                   <h3 className="font-serif text-[12px] font-semibold leading-snug text-navy group-hover:text-brand-red">
                     {video.title}
                   </h3>
-                </Link>
+                </SmartLink>
               </li>
             ))}
           </ul>
@@ -94,40 +144,118 @@ export default function Videos({ compact = false }) {
     <section>
       <SectionHeader title="Video" cta="View All →" href="/media" />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
-        <Link href="#" className="group lg:col-span-3">
-          <div className="relative h-56 overflow-hidden bg-slate-200 sm:h-72 lg:h-[340px]">
-            <Image
-              src={featured.image}
-              alt={featured.title}
-              fill
-              className="object-cover transition duration-500 group-hover:scale-[1.03]"
-              sizes="(max-width: 1024px) 100vw, 60vw"
-            />
-            <PlayBadge large />
-            <Duration label={featured.duration} />
-          </div>
-          <h3 className="mt-3 font-serif text-xl font-bold leading-snug text-slate-900 group-hover:text-brand-red sm:text-2xl">
-            {featured.title}
-          </h3>
-          <p className="mt-1.5 text-[14px] leading-relaxed text-slate-500">{featured.summary}</p>
-        </Link>
+        <div className="lg:col-span-3">
+          <FeaturedVideo
+            video={featured}
+            source={source}
+            onPlay={playFeatured}
+            frameClass="relative h-56 overflow-hidden bg-slate-200 sm:h-72 lg:h-[340px]"
+            imageClass="object-cover transition duration-500 group-hover:scale-[1.03]"
+            sizes="(max-width: 1024px) 100vw, 60vw"
+            badge={<PlayBadge large />}
+            titleClass="mt-3 font-serif text-xl font-bold leading-snug text-slate-900 group-hover:text-brand-red sm:text-2xl"
+            summaryClass="mt-1.5 text-[14px] leading-relaxed text-slate-500"
+          />
+        </div>
 
         <div className="flex flex-col divide-y divide-slate-200 lg:col-span-2 lg:border-l lg:border-slate-200 lg:pl-5">
-          {rest.map((video) => (
-            <Link key={video.title} href="#" className="group flex gap-3 py-3 first:pt-0 last:pb-0">
+          {rest.map(({ video, key }) => (
+            <SmartLink
+              key={key}
+              href={video.url || "#"}
+              onClick={select(key, video)}
+              className="group flex gap-3 py-3 first:pt-0 last:pb-0"
+            >
               <div className="relative h-[78px] w-[128px] shrink-0 overflow-hidden bg-slate-200">
-                <Image src={video.image} alt={video.title} fill className="object-cover" sizes="128px" />
+                <CoverImage src={video.image} alt={video.title} sizes="128px" />
                 <PlayBadge />
                 <Duration label={video.duration} />
               </div>
               <h3 className="line-clamp-3 font-serif text-[15px] font-semibold leading-snug text-slate-900 group-hover:text-brand-red">
                 {video.title}
               </h3>
-            </Link>
+            </SmartLink>
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function FeaturedVideo({
+  video,
+  source,
+  onPlay,
+  frameClass,
+  imageClass,
+  sizes,
+  badge,
+  titleClass,
+  summaryClass,
+}) {
+  const playable = Boolean(playSource(video));
+
+  const body = (
+    <>
+      <h3 className={titleClass}>{video.title}</h3>
+      {video.summary ? <p className={summaryClass}>{video.summary}</p> : null}
+    </>
+  );
+
+  if (source) {
+    return (
+      <div className="min-w-0">
+        <div className={`${frameClass} bg-black`}>
+          {source.kind === "embed" ? (
+            <iframe
+              src={source.src}
+              title={video.title}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <video
+              src={source.src}
+              className="absolute inset-0 h-full w-full"
+              controls
+              autoPlay
+              playsInline
+            />
+          )}
+        </div>
+        {body}
+      </div>
+    );
+  }
+
+  const cover = (
+    <div className={frameClass}>
+      <CoverImage src={video.image} alt={video.title} className={imageClass} sizes={sizes} />
+      {badge}
+      <Duration label={video.duration} />
+    </div>
+  );
+
+  if (playable) {
+    return (
+      <button
+        type="button"
+        onClick={onPlay}
+        aria-label={`Play ${video.title}`}
+        className="group block w-full min-w-0 text-left"
+      >
+        {cover}
+        {body}
+      </button>
+    );
+  }
+
+  return (
+    <SmartLink href={video.url || "#"} className="group block min-w-0">
+      {cover}
+      {body}
+    </SmartLink>
   );
 }
 
@@ -154,6 +282,7 @@ function PlayBadge({ large = false, featured = false }) {
 }
 
 function Duration({ label, compact = false }) {
+  if (!label) return null;
   return (
     <span
       className={`absolute rounded bg-black/80 font-semibold text-white ${

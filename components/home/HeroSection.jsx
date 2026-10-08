@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import CoverImage from "@/components/media/CoverImage";
 
 const slides = [
   {
@@ -120,12 +120,17 @@ const topStories = [
   },
 ];
 
-export default function HeroSection() {
+export default function HeroSection({ slides: cmsSlides, topStories: cmsStories }) {
+  const storySlides = cmsSlides?.length ? cmsSlides : slides;
+  const stories = cmsStories?.length ? cmsStories : topStories;
+  const storyCategories = cmsStories?.length
+    ? [...new Set(cmsStories.map((story) => story.category).filter(Boolean))]
+    : categories;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("Economy");
-  const slide = slides[index];
-  const lastIndex = slides.length - 1;
+  const [activeCategory, setActiveCategory] = useState(storyCategories[0] || "Economy");
+  const slide = storySlides[index] || storySlides[0];
+  const lastIndex = storySlides.length - 1;
 
   useEffect(() => {
     if (paused) return undefined;
@@ -142,18 +147,18 @@ export default function HeroSection() {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <Image
+        <CoverImage
           src={slide.image}
           alt={slide.title}
-          fill
           priority
-          className="object-cover"
           sizes="(max-width: 1024px) 100vw, 50vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
-        <p className="absolute right-4 top-4 text-[13px] font-bold text-[#4ade80] sm:right-6 sm:text-[18px]">
-          SENSEX <span className="ml-1">▲ {slide.sensex}</span>
-        </p>
+        {slide.sensex ? (
+          <p className="absolute right-4 top-4 text-[13px] font-bold text-[#4ade80] sm:right-6 sm:text-[18px]">
+            SENSEX <span className="ml-1">▲ {slide.sensex}</span>
+          </p>
+        ) : null}
         <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6">
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white">
             {slide.tagLeft}
@@ -182,7 +187,7 @@ export default function HeroSection() {
             ‹
           </button>
           <span className="min-w-[40px] text-center text-[12px] tabular-nums text-white/90">
-            {index + 1} / {slides.length}
+            {index + 1} / {storySlides.length}
           </span>
           <button
             type="button"
@@ -200,7 +205,7 @@ export default function HeroSection() {
           <h2 className="text-[18px] font-bold uppercase tracking-tight text-navy">Top Stories</h2>
         </div>
         <div className="mt-2 flex flex-wrap gap-x-3 border-b border-slate-200">
-          {categories.map((category) => (
+          {storyCategories.map((category) => (
             <button
               key={category}
               type="button"
@@ -216,13 +221,13 @@ export default function HeroSection() {
           ))}
         </div>
         <ul>
-          {topStories
+          {stories
             .filter((story) => story.category === activeCategory)
             .map((story) => (
-              <li key={story.title} className="border-b border-slate-100 px-2 last:border-b-0">
+              <li key={story.href || story.title} className="border-b border-slate-100 px-2 last:border-b-0">
                 <Link href={story.href} className="group flex items-start gap-3 py-3">
                   <div className="relative mt-0.5 h-14 w-[72px] shrink-0 overflow-hidden bg-slate-200">
-                    <Image src={story.image} alt={story.title} fill className="object-cover" sizes="72px" />
+                    <CoverImage src={story.image} alt={story.title} sizes="72px" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">

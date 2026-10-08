@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { liveTickers, marketMeta } from "@/lib/marketData";
+import * as sampleMarket from "@/lib/marketData";
 
-export default function MarketTicker() {
+export default function MarketTicker({ data = sampleMarket }) {
+  const { liveTickers, marketMeta } = data;
   return (
     <section className="bg-white">
       <div className="flex items-center overflow-x-auto rounded-lg border border-[#d9e2ec] px-4 py-4">

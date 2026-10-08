@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import StoryTypeLabel from "@/components/article/StoryTypeLabel";
+import CoverImage from "@/components/media/CoverImage";
 
 const featured = {
   tag: "Economy",
@@ -20,7 +20,9 @@ const latestUpdates = [
 
 const isLive = false;
 
-export default function LatestNews() {
+export default function LatestNews({ featured: cmsFeatured, updates }) {
+  const lead = cmsFeatured || featured;
+  const items = updates?.length ? updates : latestUpdates;
   return (
     <section className="bg-white rounded-lg py-4 px-4 border border-slate-200">
       <div className="mb-3 flex items-center justify-between border-b border-slate-200 pb-3">
@@ -44,33 +46,32 @@ export default function LatestNews() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-stretch lg:gap-8">
-        <Link href="#" className="group block">
+        <Link href={lead.href || "#"} className="group block">
           <div className="relative h-[148px] overflow-hidden rounded-md bg-slate-200 sm:h-[168px]">
-            <Image
-              src={featured.image}
-              alt={featured.title}
-              fill
+            <CoverImage
+              src={lead.image}
+              alt={lead.title}
               className="object-cover object-[center_30%] transition duration-500 group-hover:scale-[1.02]"
               sizes="(max-width: 1024px) 100vw, 45vw"
               priority
             />
           </div>
           <h3 className="mt-3 font-serif text-[20px] font-bold leading-[1.25] text-navy group-hover:text-brand-red">
-            {featured.title}
+            {lead.title}
           </h3>
           <p className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] leading-none">
             <StoryTypeLabel type="News" />
-            <span className="font-bold uppercase tracking-[0.14em] text-brand-red">{featured.tag}</span>
+            <span className="font-bold uppercase tracking-[0.14em] text-brand-red">{lead.tag}</span>
             <span className="mx-2 font-normal text-slate-300">|</span>
-            <span className="text-slate-400">{featured.time}</span>
+            <span className="text-slate-400">{lead.time}</span>
           </p>
-          <p className="mt-2 text-[13px] leading-relaxed text-slate-500">{featured.summary}</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-slate-500">{lead.summary}</p>
         </Link>
 
         <ul className="flex min-h-[260px] flex-col justify-between lg:min-h-0">
-          {latestUpdates.map((item) => (
-            <li key={item.time} className="border-b border-slate-200 last:border-b-0">
-              <Link href="#" className="group flex items-center gap-5 py-[13px]">
+          {items.map((item) => (
+            <li key={`${item.time}-${item.title}`} className="border-b border-slate-200 last:border-b-0">
+              <Link href={item.href || "#"} className="group flex items-center gap-5 py-[13px]">
                 <time className="w-[78px] shrink-0 text-[13px] font-semibold tabular-nums text-brand-red">
                   {item.time}
                 </time>

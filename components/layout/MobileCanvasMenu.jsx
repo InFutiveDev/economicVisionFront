@@ -6,8 +6,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { moreLinks, navLinks, toolsLinks } from "./navLinks";
 import GoogleTranslate from "./GoogleTranslate";
+import SubscribeButton from "@/components/subscribe/SubscribeButton";
 
-export default function MobileCanvasMenu({ open, onClose }) {
+export default function MobileCanvasMenu({ open, onClose, links = navLinks }) {
   const [mounted, setMounted] = useState(false);
   const [openSection, setOpenSection] = useState(null);
 
@@ -87,7 +88,7 @@ export default function MobileCanvasMenu({ open, onClose }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-3">
-          {navLinks.map((link) =>
+          {links.map((link) =>
             link.children ? (
               <MobileAccordion
                 key={link.label}
@@ -134,7 +135,7 @@ export default function MobileCanvasMenu({ open, onClose }) {
             <PaperIcon />
             E-Paper
           </Link>
-          <Link href="#" onClick={onClose} className="flex items-center gap-2 rounded-md px-3 py-3 text-navy hover:bg-slate-50">
+          <Link href="/media#podcasts" onClick={onClose} className="flex items-center gap-2 rounded-md px-3 py-3 text-navy hover:bg-slate-50">
             <MicIcon />
             Podcast
           </Link>
@@ -151,13 +152,10 @@ export default function MobileCanvasMenu({ open, onClose }) {
           >
             Login
           </Link>
-          <Link
-            href="#"
+          <SubscribeButton
             onClick={onClose}
             className="flex-1 rounded-md bg-brand-red py-2.5 text-center text-sm font-semibold text-white"
-          >
-            Subscribe
-          </Link>
+          />
         </div>
       </aside>
     </div>,

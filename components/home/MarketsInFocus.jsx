@@ -2,9 +2,9 @@
 
 import { useId, useState } from "react";
 import Link from "next/link";
-import { marketToday, marketTape, sectors, topGainers, topLosers } from "@/lib/marketData";
+import * as sampleMarket from "@/lib/marketData";
 
-const tabs = ["Market Today", "Top Gainers", "Top Losers", "Sectors"];
+const tabs = ["Market Today", "Top Gainers", "Top Losers"];
 
 const sparkPaths = [
   "M0 42 L8 40 L14 36 L20 38 L28 30 L36 32 L44 22 L52 24 L60 16 L70 18 L78 12 L88 10 L98 14 L108 6 L120 4",
@@ -28,7 +28,8 @@ function AreaSpark({ path, gid }) {
   );
 }
 
-export default function MarketsInFocus() {
+export default function MarketsInFocus({ data = sampleMarket }) {
+  const { marketToday, marketTape, topGainers, topLosers } = data;
   const [tab, setTab] = useState("Market Today");
   const uid = useId().replace(/:/g, "");
 
@@ -68,7 +69,9 @@ export default function MarketsInFocus() {
                 <p className="mt-1 text-[18px] sm:text-[20px] lg:text-[22px] font-bold tabular-nums leading-none tracking-tight text-navy">
                   {item.value}
                 </p>
-                <p className="mt-1.5 text-[12px] font-bold text-[#16a34a]">▲ {item.change}</p>
+                <p className={`mt-1.5 text-[12px] font-bold ${item.up ? "text-[#16a34a]" : "text-[#dc2626]"}`}>
+                  {item.up ? "▲" : "▼"} {item.change}
+                </p>
               </div>
               <div className="pointer-events-none absolute bottom-0 right-0 h-[30%] w-[58%] sm:h-[70%] sm:w-[58%] lg:h-[70%] lg:w-[58%]">
                 <AreaSpark path={sparkPaths[index]} gid={`${uid}g${index}`} />
@@ -86,9 +89,7 @@ export default function MarketsInFocus() {
 
       {tab === "Top Gainers" ? <Movers title="Top Gainers" rows={topGainers} /> : null}
       {tab === "Top Losers" ? <Movers title="Top Losers" rows={topLosers} /> : null}
-      {tab === "Sectors" ? <Movers title="Sectors" rows={sectors} /> : null}
-
-      <div className="mt-4 grid grid-cols-2 border-t border-slate-200 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-slate-200">
+      <div className="mt-4 grid grid-cols-2 border-t border-slate-200 sm:grid-cols-4 lg:divide-x lg:divide-slate-200">
         {marketTape.map((item) => (
           <article
             key={item.name}

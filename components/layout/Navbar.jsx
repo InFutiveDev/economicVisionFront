@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { moreLinks, navLinks, toolsLinks } from "./navLinks";
 
-export default function Navbar() {
+export default function Navbar({ links = navLinks }) {
   const pathname = usePathname();
 
   return (
     <nav className="sticky top-0 z-40 hidden overflow-visible bg-navy shadow-md lg:block">
       <div className="mx-auto flex max-w-8xl items-center justify-center overflow-visible px-4 text-center sm:px-6 lg:px-8">
-        {navLinks.map((link) =>
+        {links.map((link) =>
           link.children ? (
             <NavDropdown
               key={link.label}

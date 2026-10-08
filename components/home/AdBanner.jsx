@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Image from "next/image";
+import SubscribeButton from "@/components/subscribe/SubscribeButton";
 
 export default function AdBanner() {
   return (
@@ -14,12 +14,9 @@ export default function AdBanner() {
       <div className="relative px-4 py-8">
         <p className="text-[12px] leading-relaxed text-white/90">Insights today, a stronger tomorrow.</p>
         <p className="mt-2 text-[15px] font-bold">The Economic Vision</p>
-        <Link
-          href="#"
-          className="mt-4 inline-block bg-brand-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white"
-        >
+        <SubscribeButton className="mt-4 inline-block bg-brand-red px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-white hover:bg-red-700">
           Subscribe Now
-        </Link>
+        </SubscribeButton>
       </div>
     </aside>
   );

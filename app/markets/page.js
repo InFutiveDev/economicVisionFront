@@ -1,12 +1,16 @@
 import Link from "next/link";
-import { marketToday, sectors, topGainers, topLosers } from "@/lib/marketData";
+import { getMarketData } from "@/lib/liveMarket";
 
 export const metadata = {
   title: "Market Hub | EconomicVision",
-  description: "Live market snapshot of indices, gainers, losers and sector performance.",
+  description: "Live market snapshot of indices, top gainers and top losers.",
 };
 
-export default function MarketsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function MarketsPage() {
+  const { marketToday, topGainers, topLosers } = await getMarketData();
+
   return (
     <main className="bg-[#f3f5f7]">
       <div className="mx-auto max-w-8xl px-4 py-8 sm:px-8">
@@ -31,10 +35,9 @@ export default function MarketsPage() {
           </div>
         </section>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <HubColumn title="Top Gainers" rows={topGainers} showPrice />
           <HubColumn title="Top Losers" rows={topLosers} showPrice />
-          <HubColumn title="Sectors" rows={sectors} />
         </div>
 
         <Link href="/" className="mt-8 inline-block text-sm font-semibold text-brand-red hover:underline">
