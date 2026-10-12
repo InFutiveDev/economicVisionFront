@@ -44,7 +44,9 @@ export default function Header({ links }) {
           <HeaderLink icon="paper" label="E-Paper" href="/epaper" />
           <HeaderLink icon="mic" label="Podcast" href="/media#podcasts" />
           <Link
-            href="#"
+            href="https://admin.theeconomicvision.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="ml-2 rounded-md border border-brand-red px-3.5 py-1.5 text-sm font-semibold text-brand-red transition hover:bg-red-50"
           >
             Login

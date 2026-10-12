@@ -5,6 +5,7 @@ import MarketsSnapshot from "./MarketsSnapshot";
 import StoryTypeLabel from "./StoryTypeLabel";
 import CoverImage from "@/components/media/CoverImage";
 import SubscribeForm from "@/components/subscribe/SubscribeForm";
+import CommentsSection from "./CommentsSection";
 import { moreFromMarkets, relatedStories, trendingNow } from "@/lib/articles";
 
 export default function ArticleView({ article, relatedStories: related, moreStories }) {
@@ -130,6 +131,8 @@ export default function ArticleView({ article, relatedStories: related, moreStor
             </Link>
           ))}
         </div>
+
+        <CommentsSection slug={article.slug} />
 
         <section className="mt-10 border-t border-slate-200 pt-6">
           <div className="mb-4 flex items-center justify-between">

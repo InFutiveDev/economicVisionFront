@@ -146,7 +146,9 @@ export default function MobileCanvasMenu({ open, onClose, links = navLinks }) {
 
         <div className="flex gap-3 border-t border-slate-200 p-4">
           <Link
-            href="#"
+            href="https://admin.theeconomicvision.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={onClose}
             className="flex-1 rounded-md border border-brand-red py-2.5 text-center text-sm font-semibold text-brand-red"
           >
