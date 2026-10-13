@@ -26,6 +26,18 @@ const nextConfig = {
         protocol: "https",
         hostname: "i.ytimg.com",
       },
+      {
+        protocol: "https",
+        hostname: "beta.theeconomicvision.com",
+      },
+      {
+        protocol: "https",
+        hostname: "api.theeconomicvision.com",
+      },
+      {
+        protocol: "https",
+        hostname: "theeconomicvision.com",
+      },
     ],
   },
 };

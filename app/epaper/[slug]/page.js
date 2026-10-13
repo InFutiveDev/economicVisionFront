@@ -1,14 +1,20 @@
 import { notFound } from "next/navigation";
-import { editions, getEdition } from "@/components/epaper/epaperData";
+import { editions as fallbackEditions, getEdition as getFallbackEdition } from "@/components/epaper/epaperData";
+import { getEpaper, getEpapers } from "@/lib/epaper";
 import EPaperView from "@/components/epaper/EPaperView";
 
-export function generateStaticParams() {
-  return editions.map((edition) => ({ slug: edition.slug }));
+export const dynamic = "force-dynamic";
+
+export async function generateStaticParams() {
+  const editions = await getEpapers();
+  const list = editions?.length ? editions : fallbackEditions;
+  return list.map((edition) => ({ slug: edition.slug }));
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
-  const edition = getEdition(slug);
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  const edition = (await getEpaper(slug)) || getFallbackEdition(slug);
   if (!edition) return { title: "E-Paper | EconomicVision" };
   return {
     title: `${edition.name} · ${edition.city} | E-Paper`,
@@ -17,8 +23,9 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function EPaperEditionPage({ params }) {
-  const { slug } = await params;
-  const edition = getEdition(slug);
+  const resolvedParams = await params;
+  const slug = resolvedParams?.slug;
+  const edition = (await getEpaper(slug)) || getFallbackEdition(slug);
   if (!edition) notFound();
 
   return (

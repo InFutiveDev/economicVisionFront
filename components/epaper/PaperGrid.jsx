@@ -1,7 +1,8 @@
-import { editions } from "./epaperData";
+import { editions as fallbackEditions } from "./epaperData";
 import PaperCard from "./PaperCard";
 
-export default function PaperGrid() {
+export default function PaperGrid({ editions: propEditions }) {
+  const editions = propEditions?.length ? propEditions : fallbackEditions;
   return (
     <section>
       <div className="mb-6 border-b-[3px] border-brand-red pb-3">
@@ -12,7 +13,7 @@ export default function PaperGrid() {
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
         {editions.map((edition) => (
-          <PaperCard key={edition.slug} edition={edition} />
+          <PaperCard key={edition.slug || edition.id} edition={edition} />
         ))}
       </div>
     </section>

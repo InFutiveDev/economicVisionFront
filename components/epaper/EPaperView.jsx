@@ -25,7 +25,7 @@ export default function EPaperView({ edition }) {
         onPrev={() => setIndex((value) => Math.max(0, value - 1))}
         onNext={() => setIndex((value) => Math.min(pages.length - 1, value + 1))}
         onSelect={setIndex}
-        downloadHref={page.image}
+        downloadHref={page.customDesign ? null : page.image}
       />
       <PageThumbs pages={pages} currentIndex={index} onSelect={setIndex} />
     </>

@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import BroadsheetCanvas from "./BroadsheetCanvas";
 
 export default function PaperViewer({
   page,
@@ -93,19 +94,34 @@ export default function PaperViewer({
 
       <div className="bg-slate-300 px-4 py-4 sm:px-8 sm:py-6">
         <div className="mx-auto max-h-[75vh] overflow-auto bg-white shadow-md">
-          <div
-            className="origin-top transition-transform"
-            style={{ transform: `scale(${zoom / 100})` }}
-          >
-            <Image
-              src={page.image}
-              alt={page.title}
-              width={1200}
-              height={1700}
-              className="h-auto w-full"
-              priority
-            />
-          </div>
+          {page.customDesign ? (
+            /* Render broadsheet canvas for designed pages */
+            <div
+              className="origin-top transition-transform"
+              style={{ transformOrigin: "top center", width: "fit-content" }}
+            >
+              <BroadsheetCanvas design={page.customDesign} scale={zoom / 100} />
+            </div>
+          ) : page.image ? (
+            /* Render scanned image for image-only pages */
+            <div
+              className="origin-top transition-transform"
+              style={{ transform: `scale(${zoom / 100})` }}
+            >
+              <Image
+                src={page.image}
+                alt={page.title}
+                width={1200}
+                height={1700}
+                className="h-auto w-full"
+                priority
+              />
+            </div>
+          ) : (
+            <div className="flex h-64 items-center justify-center text-slate-500 text-sm">
+              No content available for this page
+            </div>
+          )}
         </div>
       </div>
 
@@ -122,10 +138,12 @@ export default function PaperViewer({
 
         <span className="hidden h-4 w-px bg-white/30 sm:block" />
 
-        <a href={downloadHref} download className="inline-flex items-center gap-1.5 hover:text-white/80">
-          <DownloadIcon />
-          Download
-        </a>
+        {downloadHref && (
+          <a href={downloadHref} download className="inline-flex items-center gap-1.5 hover:text-white/80">
+            <DownloadIcon />
+            Download
+          </a>
+        )}
         <button type="button" onClick={printPage} className="inline-flex items-center gap-1.5 hover:text-white/80">
           <PrintIcon />
           Print
