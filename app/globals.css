@@ -30,17 +30,26 @@ html {
 .goog-te-banner-frame,
 .goog-te-balloon-frame,
 .goog-logo-link,
-.skiptranslate,
-.goog-te-gadget,
 .goog-te-gadget-icon,
 #goog-gt-tt,
 .goog-te-balloon,
 .goog-tooltip,
 .VIpgJd-yAWNEb-L7lbkb,
 .VIpgJd-ZVi9od-ORHb,
-iframe.skiptranslate {
+iframe.goog-te-banner-frame,
+iframe.VIpgJd-ZVi9od-ORHb-OEVmcd {
   display: none !important;
   visibility: hidden !important;
+}
+
+#google_translate_element,
+#google_translate_element .goog-te-gadget,
+#google_translate_element .skiptranslate {
+  position: absolute !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
 }
 
 .goog-text-highlight,
