@@ -99,19 +99,19 @@ export default function Footer() {
 
           <h4 className="mt-5 text-[16px] font-bold">Follow Us</h4>
           <div className="mt-2.5 flex items-center gap-2">
-            <SocialIcon label="Facebook">
+            <SocialIcon label="Facebook" href="https://www.facebook.com/profile.php?id=61594373919677" target="_blank">
               <path d="M15 8h-2.2c-.4 0-.8.4-.8.9v1.9H15l-.4 2.8h-2.6V22h-3v-8.4H7v-2.8h2V9.2A3.2 3.2 0 0112.3 6H15z" />
             </SocialIcon>
-            <SocialIcon label="X">
+            <SocialIcon label="X" href="https://x.com/deconomicvision" target="_blank">
               <path d="M17.8 4H20l-6.2 7.1L20.7 20h-5.2l-4-5.3L6.8 20H4.6l6.6-7.6L3.4 4h5.3l3.7 4.9L17.8 4zm-1.8 14.4h1.4L8.1 5.5H6.6l9.4 12.9z" />
             </SocialIcon>
-            <SocialIcon label="LinkedIn">
+            {/* <SocialIcon label="LinkedIn" href="https://www.linkedin.com/company/theeconomicvision" target="_blank">
               <path d="M6.5 9H4v11h2.5V9zM5.2 3.4A1.6 1.6 0 105.2 6.6 1.6 1.6 0 005.2 3.4zM20 20h-2.5v-6c0-1.7-.6-2.8-2.1-2.8-1.1 0-1.8.8-2.1 1.5-.1.3-.1.6-.1.9V20H11V9h2.4v1.5c.6-.9 1.6-2.2 3.9-2.2 2.8 0 4.7 1.8 4.7 5.7V20z" />
-            </SocialIcon>
-            <SocialIcon label="YouTube">
+            </SocialIcon> */}
+            <SocialIcon label="YouTube" href="https://www.youtube.com/@TheEconomicVisionDaily" target="_blank">
               <path d="M21.6 7.2a2.7 2.7 0 00-1.9-1.9C18.1 5 12 5 12 5s-6.1 0-7.7.3a2.7 2.7 0 00-1.9 1.9A28 28 0 002 12a28 28 0 00.4 4.8 2.7 2.7 0 001.9 1.9C5.9 19 12 19 12 19s6.1 0 7.7-.3a2.7 2.7 0 001.9-1.9A28 28 0 0022 12a28 28 0 00-.4-4.8zM10 15.2V8.8L15.5 12 10 15.2z" />
             </SocialIcon>
-            <SocialIcon label="Instagram">
+            <SocialIcon label="Instagram" href="https://www.instagram.com/theeconomicvisiondaily/" target="_blank">
               <path d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm8 1.8H8A3.2 3.2 0 004.8 8v8A3.2 3.2 0 008 19.2h8A3.2 3.2 0 0019.2 16V8A3.2 3.2 0 0016 4.8zM12 7.4A4.6 4.6 0 1112 16.6 4.6 4.6 0 0112 7.4zm0 1.8A2.8 2.8 0 1014.8 12 2.8 2.8 0 0012 9.2zM17.4 6.4a1 1 0 11-1 1 1 1 0 011-1z" />
             </SocialIcon>
           </div>
@@ -158,12 +158,13 @@ function FooterColumn({ title, items }) {
   );
 }
 
-function SocialIcon({ label, children }) {
+function SocialIcon({ label, children, href, target }) {
   return (
     <Link
-      href="#"
+      href={href}
       aria-label={label}
       className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
+      target={target}
     >
       <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
         {children}
