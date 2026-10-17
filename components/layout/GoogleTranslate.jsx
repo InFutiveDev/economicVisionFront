@@ -135,7 +135,7 @@ export default function GoogleTranslate({ variant = "header" }) {
         aria-label="Change language"
       >
         {variant === "menu" ? <GlobeIcon /> : null}
-        {variant === "menu" ? current : "English"}
+        <span className="notranslate">{current}</span>
         <span className="text-[9px] text-slate-400">▼</span>
       </button>
       {open && (
