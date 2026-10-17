@@ -12,18 +12,17 @@ export const translateLanguages = [
   { code: "bn", label: "বাংলা" },
 ];
 
-const PENDING_KEY = "ev_gt_pending";
+const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function cookieLanguageCode() {
   if (typeof document === "undefined") return "en";
   const codes = [...document.cookie.matchAll(/(?:^|;\s*)googtrans=([^;]*)/g)].map((match) => {
     const value = decodeURIComponent(match[1] || "");
     const parts = value.split("/").filter(Boolean);
-    // values look like en/hi or /en/hi
     return parts[1] || parts[0] || "";
   });
   const code = [...codes].reverse().find((value) => value && value !== "en") || codes.at(-1) || "en";
-  return code === "en" || !code ? "en" : code;
+  return !code || code === "en" ? "en" : code;
 }
 
 function labelForCode(code) {
@@ -43,19 +42,16 @@ function isLocalHost(hostname) {
 function cookieDomainList() {
   const hostname = window.location.hostname;
   const domains = new Set(["", hostname]);
-
   if (!isLocalHost(hostname)) {
     const root = rootDomain(hostname);
     domains.add(`.${hostname}`);
     domains.add(root);
     domains.add(`.${root}`);
   }
-
   return [...domains];
 }
 
 function clearGoogTransCookies() {
-  const domains = cookieDomainList();
   const flagSets = [
     "",
     "; SameSite=Lax",
@@ -63,8 +59,7 @@ function clearGoogTransCookies() {
     window.location.protocol === "https:" ? "; Secure" : "",
     `; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`,
   ];
-
-  domains.forEach((domain) => {
+  cookieDomainList().forEach((domain) => {
     const domainPart = domain ? `; domain=${domain}` : "";
     flagSets.forEach((flags) => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domainPart}${flags}`;
@@ -81,42 +76,80 @@ function writeGoogTransCookie(value) {
   });
 }
 
-function stripGoogTransHash() {
-  if (!window.location.hash.toLowerCase().includes("googtrans")) return;
-  history.replaceState(null, "", window.location.pathname + window.location.search);
-}
-
-function hardReload() {
-  window.location.href = `${window.location.pathname}${window.location.search}`;
-}
-
-function resetToEnglishCookies() {
-  stripGoogTransHash();
+function syncCookie(code) {
   clearGoogTransCookies();
-  writeGoogTransCookie("/en/en");
+  writeGoogTransCookie(code === "en" ? "/en/en" : `/en/${code}`);
 }
 
-function applyTargetLanguage(code) {
-  stripGoogTransHash();
-  clearGoogTransCookies();
-  writeGoogTransCookie(`/en/${code}`);
+function getCombo() {
+  return document.querySelector("#google_translate_element select.goog-te-combo, select.goog-te-combo");
+}
+
+async function waitForCombo(timeoutMs = 8000) {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const combo = getCombo();
+    if (combo) return combo;
+    await delay(100);
+  }
+  return null;
+}
+
+function fireComboChange(combo, value) {
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value")?.set;
+  setter?.call(combo, value);
+  combo.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+/**
+ * Google Translate only reliably switches languages if we:
+ * 1) reset the combo to "" (original),
+ * 2) wait,
+ * 3) set the target code,
+ * and when returning to English, fire change twice.
+ */
+async function translateTo(code) {
+  const combo = await waitForCombo();
+  if (!combo) return false;
+
+  const active = combo.value || cookieLanguageCode();
+  if (active === code || (code === "en" && !active)) {
+    syncCookie(code);
+    return true;
+  }
+
+  // Always return to original first — required to re-select a previous language.
+  fireComboChange(combo, "");
+  // English needs a second change event (Google replaces "en" with a blank option).
+  fireComboChange(combo, "");
+  await delay(700);
+
+  if (code === "en") {
+    syncCookie("en");
+    // Reload clears leftover <font> wrappers from the previous translation.
+    window.location.reload();
+    return true;
+  }
+
+  fireComboChange(combo, code);
+  // If Google ignored the first set (common when revisiting a language), try again.
+  await delay(400);
+  if (combo.value !== code) {
+    fireComboChange(combo, "");
+    await delay(500);
+    fireComboChange(combo, code);
+  }
+
+  syncCookie(code);
+  return combo.value === code || cookieLanguageCode() === code;
 }
 
 export function GoogleTranslateWidget() {
   useEffect(() => {
-    // Finish a two-step switch: English reset → apply pending language → reload.
-    const pending = sessionStorage.getItem(PENDING_KEY);
-    if (pending && translateLanguages.some((lang) => lang.code === pending && pending !== "en")) {
-      sessionStorage.removeItem(PENDING_KEY);
-      applyTargetLanguage(pending);
-      hardReload();
-      return undefined;
-    }
-
     if (document.getElementById("google-translate-script")) return undefined;
 
     window.googleTranslateElementInit = () => {
-      if (!window.google?.translate || document.querySelector(".goog-te-combo")) return;
+      if (!window.google?.translate || getCombo()) return;
       new window.google.translate.TranslateElement(
         {
           pageLanguage: "en",
@@ -133,19 +166,9 @@ export function GoogleTranslateWidget() {
     script.async = true;
     document.body.appendChild(script);
 
-    function hideTranslatePopups() {
-      document
-        .querySelectorAll("#goog-gt-tt, .goog-te-balloon-frame, .goog-te-banner-frame, iframe.goog-te-banner-frame")
-        .forEach((node) => {
-          node.remove();
-        });
-    }
-
-    const observer = new MutationObserver(hideTranslatePopups);
-    observer.observe(document.body, { childList: true, subtree: true });
-    hideTranslatePopups();
-
-    return () => observer.disconnect();
+    // Do NOT remove Google's banner/iframe nodes — that breaks language re-selection.
+    // They are hidden via CSS in globals.css instead.
+    return undefined;
   }, []);
 
   return (
@@ -160,11 +183,11 @@ export function GoogleTranslateWidget() {
 export default function GoogleTranslate({ variant = "header" }) {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState("English");
+  const [busy, setBusy] = useState(false);
   const rootRef = useRef(null);
 
   useEffect(() => {
-    const pending = sessionStorage.getItem(PENDING_KEY);
-    setCurrent(pending ? labelForCode(pending) : labelForCode(cookieLanguageCode()));
+    setCurrent(labelForCode(cookieLanguageCode()));
   }, []);
 
   useEffect(() => {
@@ -177,34 +200,22 @@ export default function GoogleTranslate({ variant = "header" }) {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
-  function changeLanguage(code, label) {
+  async function changeLanguage(code, label) {
+    if (busy) return;
     setOpen(false);
     setCurrent(label);
+    setBusy(true);
 
-    const active = cookieLanguageCode();
-    if (code === active && !sessionStorage.getItem(PENDING_KEY)) return;
-
-    // English: clear translation and reload once.
-    if (code === "en") {
-      sessionStorage.removeItem(PENDING_KEY);
-      resetToEnglishCookies();
-      hardReload();
-      return;
+    try {
+      const ok = await translateTo(code);
+      if (!ok) {
+        // Last resort: cookie + full navigation.
+        syncCookie(code);
+        window.location.href = `${window.location.pathname}${window.location.search}`;
+      }
+    } finally {
+      setBusy(false);
     }
-
-    // From English: set target and reload once.
-    if (active === "en") {
-      sessionStorage.removeItem(PENDING_KEY);
-      applyTargetLanguage(code);
-      hardReload();
-      return;
-    }
-
-    // Non-English → another language (including a previous one).
-    // Google ignores re-selecting a language, so reset to English first, then apply on next load.
-    sessionStorage.setItem(PENDING_KEY, code);
-    resetToEnglishCookies();
-    hardReload();
   }
 
   return (
@@ -212,20 +223,21 @@ export default function GoogleTranslate({ variant = "header" }) {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
+        disabled={busy}
         className={
           variant === "menu"
-            ? "flex w-full items-center gap-2 border border-[#d9e2ec] rounded-lg px-3 py-3 text-left text-navy hover:bg-slate-50"
-            : "notranslate flex items-center gap-1 rounded-lg border border-[#d9e2ec] px-2.5 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-navy"
+            ? "flex w-full items-center gap-2 border border-[#d9e2ec] rounded-lg px-3 py-3 text-left text-navy hover:bg-slate-50 disabled:opacity-60"
+            : "notranslate flex items-center gap-1 rounded-lg border border-[#d9e2ec] px-2.5 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 hover:text-navy disabled:opacity-60"
         }
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-label="Change language"
       >
         {variant === "menu" ? <GlobeIcon /> : null}
-        <span className="notranslate">{current}</span>
+        <span className="notranslate">{busy ? "Translating…" : current}</span>
         <span className="text-[9px] text-slate-400">▼</span>
       </button>
-      {open && (
+      {open && !busy ? (
         <ul
           role="listbox"
           className={
@@ -248,7 +260,7 @@ export default function GoogleTranslate({ variant = "header" }) {
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   );
 }
