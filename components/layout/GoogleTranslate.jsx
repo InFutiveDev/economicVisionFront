@@ -57,11 +57,29 @@ function writeGoogTransCookie(value, extra = "") {
 }
 
 function clearGoogTransCookies() {
+  // Expire every domain/path variant Google Translate may have written.
   writeGoogTransCookie("", "; expires=Thu, 01 Jan 1970 00:00:00 GMT");
+  writeGoogTransCookie("", "; Max-Age=0");
 }
 
 function setGoogTransCookie(value) {
+  clearGoogTransCookies();
   writeGoogTransCookie(value);
+}
+
+function applyTranslateCombo(code) {
+  const combo = document.querySelector(".goog-te-combo");
+  if (!combo) return false;
+
+  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value")?.set;
+  // Google Translate often ignores A→B until the select is reset to the source language.
+  if (combo.value && combo.value !== code) {
+    setter?.call(combo, "");
+    combo.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  setter?.call(combo, code === "en" ? "" : code);
+  combo.dispatchEvent(new Event("change", { bubbles: true }));
+  return true;
 }
 
 export function GoogleTranslateWidget() {
@@ -133,22 +151,18 @@ export default function GoogleTranslate({ variant = "header" }) {
     setOpen(false);
     setCurrent(label);
 
+    // Always clear first; leftover googtrans cookies block language→language switches.
+    clearGoogTransCookies();
+
     if (code === "en") {
-      clearGoogTransCookies();
-      window.setTimeout(() => window.location.reload(), 50);
+      applyTranslateCombo("en");
+      window.location.reload();
       return;
     }
 
     setGoogTransCookie(`/en/${code}`);
-
-    const combo = document.querySelector(".goog-te-combo");
-    if (combo) {
-      const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value")?.set;
-      setter?.call(combo, code);
-      combo.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-
-    window.setTimeout(() => window.location.reload(), 50);
+    applyTranslateCombo(code);
+    window.location.reload();
   }
 
   return (
