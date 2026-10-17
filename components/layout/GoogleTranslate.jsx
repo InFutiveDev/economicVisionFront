@@ -12,15 +12,21 @@ export const translateLanguages = [
   { code: "bn", label: "বাংলা" },
 ];
 
-function currentLanguageLabel() {
-  if (typeof document === "undefined") return "English";
+const PENDING_KEY = "ev_gt_pending";
+
+function cookieLanguageCode() {
+  if (typeof document === "undefined") return "en";
   const codes = [...document.cookie.matchAll(/(?:^|;\s*)googtrans=([^;]*)/g)].map((match) => {
     const value = decodeURIComponent(match[1] || "");
-    const parts = value.split("/");
-    return parts[2] || parts[1] || "";
+    const parts = value.split("/").filter(Boolean);
+    // values look like en/hi or /en/hi
+    return parts[1] || parts[0] || "";
   });
-  const code = [...codes].reverse().find((value) => value && value !== "en") || codes.at(-1);
-  if (!code || code === "en") return "English";
+  const code = [...codes].reverse().find((value) => value && value !== "en") || codes.at(-1) || "en";
+  return code === "en" || !code ? "en" : code;
+}
+
+function labelForCode(code) {
   return translateLanguages.find((lang) => lang.code === code)?.label || "English";
 }
 
@@ -48,7 +54,6 @@ function cookieDomainList() {
   return [...domains];
 }
 
-// Google and our own code may have written googtrans with different Secure/SameSite flags.
 function clearGoogTransCookies() {
   const domains = cookieDomainList();
   const flagSets = [
@@ -64,7 +69,6 @@ function clearGoogTransCookies() {
     flagSets.forEach((flags) => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domainPart}${flags}`;
       document.cookie = `googtrans=; Max-Age=0; path=/${domainPart}${flags}`;
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=${domainPart}${flags}`;
     });
   });
 }
@@ -77,77 +81,43 @@ function writeGoogTransCookie(value) {
   });
 }
 
-function setGoogTransCookie(value) {
-  clearGoogTransCookies();
-  writeGoogTransCookie(value);
-}
-
 function stripGoogTransHash() {
   if (!window.location.hash.toLowerCase().includes("googtrans")) return;
   history.replaceState(null, "", window.location.pathname + window.location.search);
 }
 
-function restoreGoogleTranslate() {
-  const element = window.__evGoogleTranslate;
-  if (element) {
-    for (const key of Object.keys(element)) {
-      if (typeof element[key]?.restore === "function") {
-        try {
-          element[key].restore();
-          return true;
-        } catch {
-          /* keep trying other keys */
-        }
-      }
-    }
-  }
-
-  // Banner "Show original" button (if Google still injected the frame).
-  const frame =
-    document.querySelector(".goog-te-banner-frame") ||
-    document.querySelector('iframe[id*=":1."]') ||
-    document.getElementById(":1.container");
-  const doc = frame?.contentDocument || frame?.contentWindow?.document;
-  if (!doc) return false;
-
-  const restoreButton = [...doc.querySelectorAll("button")].find((button) =>
-    /restore|original/i.test(`${button.id} ${button.className} ${button.title}`)
-  );
-  if (!restoreButton) return false;
-  restoreButton.click();
-  return true;
-}
-
-function applyTranslateCombo(code) {
-  const combo = document.querySelector(".goog-te-combo");
-  if (!combo) return false;
-
-  const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, "value")?.set;
-  const next = code === "en" ? "" : code;
-
-  // Reset first — Google often ignores A→B and previous-language reselects otherwise.
-  setter?.call(combo, "");
-  combo.dispatchEvent(new Event("change", { bubbles: true }));
-
-  if (next) {
-    setter?.call(combo, next);
-    combo.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-  return true;
-}
-
 function hardReload() {
-  // Full navigation (not soft reload) so Google drops the in-memory translation.
   window.location.href = `${window.location.pathname}${window.location.search}`;
+}
+
+function resetToEnglishCookies() {
+  stripGoogTransHash();
+  clearGoogTransCookies();
+  writeGoogTransCookie("/en/en");
+}
+
+function applyTargetLanguage(code) {
+  stripGoogTransHash();
+  clearGoogTransCookies();
+  writeGoogTransCookie(`/en/${code}`);
 }
 
 export function GoogleTranslateWidget() {
   useEffect(() => {
-    if (document.getElementById("google-translate-script")) return;
+    // Finish a two-step switch: English reset → apply pending language → reload.
+    const pending = sessionStorage.getItem(PENDING_KEY);
+    if (pending && translateLanguages.some((lang) => lang.code === pending && pending !== "en")) {
+      sessionStorage.removeItem(PENDING_KEY);
+      applyTargetLanguage(pending);
+      hardReload();
+      return undefined;
+    }
+
+    if (document.getElementById("google-translate-script")) return undefined;
 
     window.googleTranslateElementInit = () => {
       if (!window.google?.translate || document.querySelector(".goog-te-combo")) return;
-      window.__evGoogleTranslate = new window.google.translate.TranslateElement(
+      new window.google.translate.TranslateElement(
         {
           pageLanguage: "en",
           includedLanguages: translateLanguages.map((lang) => lang.code).join(","),
@@ -171,18 +141,11 @@ export function GoogleTranslateWidget() {
         });
     }
 
-    // Delay hiding the banner briefly so restoreOriginal can still click it if needed.
-    const observer = new MutationObserver(() => {
-      window.clearTimeout(hideTranslatePopups._timer);
-      hideTranslatePopups._timer = window.setTimeout(hideTranslatePopups, 400);
-    });
+    const observer = new MutationObserver(hideTranslatePopups);
     observer.observe(document.body, { childList: true, subtree: true });
-    hideTranslatePopups._timer = window.setTimeout(hideTranslatePopups, 400);
+    hideTranslatePopups();
 
-    return () => {
-      observer.disconnect();
-      window.clearTimeout(hideTranslatePopups._timer);
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -200,7 +163,8 @@ export default function GoogleTranslate({ variant = "header" }) {
   const rootRef = useRef(null);
 
   useEffect(() => {
-    setCurrent(currentLanguageLabel());
+    const pending = sessionStorage.getItem(PENDING_KEY);
+    setCurrent(pending ? labelForCode(pending) : labelForCode(cookieLanguageCode()));
   }, []);
 
   useEffect(() => {
@@ -216,22 +180,31 @@ export default function GoogleTranslate({ variant = "header" }) {
   function changeLanguage(code, label) {
     setOpen(false);
     setCurrent(label);
-    stripGoogTransHash();
 
+    const active = cookieLanguageCode();
+    if (code === active && !sessionStorage.getItem(PENDING_KEY)) return;
+
+    // English: clear translation and reload once.
     if (code === "en") {
-      restoreGoogleTranslate();
-      applyTranslateCombo("en");
-      clearGoogTransCookies();
-      // /en/en forces Google to show the original page (empty cookie alone often fails).
-      writeGoogTransCookie("/en/en");
-      window.setTimeout(hardReload, 80);
+      sessionStorage.removeItem(PENDING_KEY);
+      resetToEnglishCookies();
+      hardReload();
       return;
     }
 
-    clearGoogTransCookies();
-    setGoogTransCookie(`/en/${code}`);
-    applyTranslateCombo(code);
-    window.setTimeout(hardReload, 80);
+    // From English: set target and reload once.
+    if (active === "en") {
+      sessionStorage.removeItem(PENDING_KEY);
+      applyTargetLanguage(code);
+      hardReload();
+      return;
+    }
+
+    // Non-English → another language (including a previous one).
+    // Google ignores re-selecting a language, so reset to English first, then apply on next load.
+    sessionStorage.setItem(PENDING_KEY, code);
+    resetToEnglishCookies();
+    hardReload();
   }
 
   return (
