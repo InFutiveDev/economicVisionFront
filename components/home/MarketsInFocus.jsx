@@ -10,6 +10,9 @@ const sparkPaths = [
   "M0 42 L8 40 L14 36 L20 38 L28 30 L36 32 L44 22 L52 24 L60 16 L70 18 L78 12 L88 10 L98 14 L108 6 L120 4",
   "M0 40 L10 38 L18 28 L26 30 L34 20 L42 24 L50 14 L60 16 L72 10 L84 12 L96 7 L108 9 L120 3",
   "M0 44 L12 40 L20 34 L28 36 L38 24 L46 26 L58 16 L68 18 L80 10 L92 12 L104 6 L120 5",
+  "M0 38 L10 36 L18 32 L28 34 L36 24 L48 26 L58 18 L70 20 L82 12 L94 14 L108 8 L120 6",
+  "M0 40 L12 36 L22 30 L32 32 L42 22 L54 24 L66 16 L78 18 L90 10 L102 12 L120 5",
+  "M0 42 L14 38 L24 34 L34 36 L46 26 L56 28 L68 18 L80 20 L92 12 L104 14 L120 7",
 ];
 
 function AreaSpark({ path, gid }) {
@@ -58,7 +61,7 @@ export default function MarketsInFocus({ data = sampleMarket }) {
       </div>
 
       {tab === "Market Today" ? (
-        <div className="grid grid-cols-3 gap-2.5 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
           {marketToday.map((item, index) => (
             <article
               key={item.name}
@@ -74,14 +77,14 @@ export default function MarketsInFocus({ data = sampleMarket }) {
                 </p>
               </div>
               <div className="pointer-events-none absolute bottom-0 right-0 h-[30%] w-[58%] sm:h-[70%] sm:w-[58%] lg:h-[70%] lg:w-[58%]">
-                <AreaSpark path={sparkPaths[index]} gid={`${uid}g${index}`} />
+                <AreaSpark path={sparkPaths[index % sparkPaths.length]} gid={`${uid}g${index}`} />
               </div>
             </article>
           ))}
-          <div className="col-span-3 lg:col-span-1">
+          <div className="col-span-2 sm:col-span-1 lg:col-span-1">
             <Movers title="Top Gainers" rows={topGainers} />
           </div>
-          <div className="col-span-3 lg:col-span-1">
+          <div className="col-span-2 sm:col-span-1 lg:col-span-1">
             <Movers title="Top Losers" rows={topLosers} />
           </div>
         </div>

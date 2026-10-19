@@ -73,16 +73,19 @@ body {
   }
 }
 
-.breaking-ticker-track {
+.breaking-ticker-track,
+.market-ticker-track {
   animation: breaking-ticker 28s linear infinite;
 }
 
-.group:hover .breaking-ticker-track {
+.group:hover .breaking-ticker-track,
+.group:hover .market-ticker-track {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .breaking-ticker-track {
+  .breaking-ticker-track,
+  .market-ticker-track {
     animation: none;
   }
 }
