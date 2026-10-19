@@ -72,8 +72,7 @@ export const toolsLinks = [
   { href: "/tools/lumpsum-calculator", label: "Lumpsum Calculator" },
   { href: "/tools/sip-calculator", label: "SIP Calculator" },
   { href: "/tools/loan-calculator", label: "Loan Calculator" },
-  
-  
+  { href: "/tools/forex-calculator", label: "Forex Calculator" },
 ];
 export const moreLinks = [
   { href: "#", label: "Mutual Funds" },
