@@ -6,12 +6,14 @@ import StoryTypeLabel from "./StoryTypeLabel";
 import CoverImage from "@/components/media/CoverImage";
 import SubscribeForm from "@/components/subscribe/SubscribeForm";
 import CommentsSection from "./CommentsSection";
+import SafeHtml, { plainText } from "./SafeHtml";
 import { moreFromMarkets, relatedStories, trendingNow } from "@/lib/articles";
 
 export default function ArticleView({ article, relatedStories: related, moreStories }) {
   const relatedItems = related?.length ? related : relatedStories;
   const moreItems = moreStories?.length ? moreStories : moreFromMarkets;
   const hasBlocks = Array.isArray(article.blocks) && article.blocks.length > 0;
+  const titlePlain = article.titlePlain || plainText(article.title);
   return (
     <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px] xl:grid-cols-[minmax(0,1fr)_320px]">
       <article className="min-w-0">
@@ -26,7 +28,7 @@ export default function ArticleView({ article, relatedStories: related, moreStor
             <span>{article.subsection}</span>
           )}
           <span>›</span>
-          <span className="line-clamp-1 text-slate-500">{article.title.split(";")[0]}</span>
+          <span className="line-clamp-1 text-slate-500">{titlePlain.split(";")[0]}</span>
         </nav>
 
         <p className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-[0.14em] text-navy">
@@ -37,10 +39,21 @@ export default function ArticleView({ article, relatedStories: related, moreStor
           <span>{article.tagRight}</span>
         </p>
 
-        <h1 className="mt-3 font-serif text-[32px] font-bold leading-[1.15] text-navy sm:text-[40px]">
-          {article.title}
-        </h1>
-        <p className="mt-3 max-w-3xl text-[16px] leading-relaxed text-slate-600">{article.dek}</p>
+        <SafeHtml
+          as="h1"
+          className="mt-3 font-serif text-[32px] font-bold leading-[1.15] text-navy sm:text-[40px] rich-content"
+          html={article.title}
+        />
+        {article.subtitle ? (
+          <SafeHtml
+            as="p"
+            className="mt-3 max-w-3xl font-serif text-[20px] leading-relaxed text-slate-700 rich-content"
+            html={article.subtitle}
+          />
+        ) : null}
+        {article.dek ? (
+          <p className="mt-3 max-w-3xl text-[16px] leading-relaxed text-slate-600">{article.dek}</p>
+        ) : null}
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
           <div className="flex items-center gap-3">
@@ -69,7 +82,7 @@ export default function ArticleView({ article, relatedStories: related, moreStor
             <div className="relative h-[240px] overflow-hidden bg-slate-200 sm:h-[380px]">
               <CoverImage
                 src={article.image}
-                alt={article.title}
+                alt={titlePlain}
                 priority
                 sizes="(max-width: 1024px) 100vw, 70vw"
               />
@@ -84,8 +97,13 @@ export default function ArticleView({ article, relatedStories: related, moreStor
           <BlockBody blocks={article.blocks} />
         ) : (
           <div className="mt-6 max-w-3xl space-y-5 text-[16px] leading-[1.75] text-slate-700">
-            {(article.paragraphs || []).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+            {(article.paragraphs || []).map((paragraph, index) => (
+              <SafeHtml
+                key={`${plainText(paragraph).slice(0, 40)}-${index}`}
+                as="div"
+                className="rich-content whitespace-pre-wrap break-words"
+                html={paragraph}
+              />
             ))}
           </div>
         )}

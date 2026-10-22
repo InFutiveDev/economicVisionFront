@@ -1,3 +1,5 @@
+import SafeHtml from "./SafeHtml";
+
 export default function BlockBody({ blocks }) {
   return (
     <div className="mt-6 max-w-3xl space-y-5 text-[16px] leading-[1.75] text-slate-700">
@@ -8,14 +10,24 @@ export default function BlockBody({ blocks }) {
         if (block.type === "heading") {
           const Tag = data.level === 4 ? "h4" : data.level === 3 ? "h3" : "h2";
           return (
-            <Tag key={key} className="font-serif text-[26px] font-bold leading-tight text-navy">
-              {data.text}
-            </Tag>
+            <SafeHtml
+              key={key}
+              as={Tag}
+              className="font-serif text-[26px] font-bold leading-tight text-navy rich-content"
+              html={data.text}
+            />
           );
         }
 
         if (block.type === "paragraph") {
-          return <p key={key}>{data.text}</p>;
+          return (
+            <SafeHtml
+              key={key}
+              as="div"
+              className="rich-content whitespace-pre-wrap break-words"
+              html={data.text}
+            />
+          );
         }
 
         if (block.type === "quote") {

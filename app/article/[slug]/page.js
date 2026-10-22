@@ -1,4 +1,5 @@
 import ArticleScreen from "@/components/article/ArticleScreen";
+import { plainText } from "@/components/article/SafeHtml";
 import { getArticle } from "@/lib/articles";
 import { getPublishedArticle } from "@/lib/cms";
 
@@ -9,9 +10,16 @@ export async function generateMetadata({ params }) {
   const payload = await getPublishedArticle(slug);
   const article = payload?.article || getArticle(slug);
   if (!article) return { title: "Article | EconomicVision" };
+  const title =
+    article.metaTitle ||
+    article.titlePlain ||
+    plainText(article.title) ||
+    "Article";
+  const description =
+    article.metaDescription || article.dek || article.excerpt || "";
   return {
-    title: `${article.title} | EconomicVision`,
-    description: article.dek || article.excerpt || "",
+    title: `${title} | EconomicVision`,
+    description,
   };
 }
 
