@@ -1,4 +1,5 @@
 import MarketTicker from "@/components/home/MarketTicker";
+import StockTicker from "@/components/home/StockTicker";
 import BreakingNewsStrip from "@/components/home/BreakingNewsStrip";
 import MarketsInFocus from "@/components/home/MarketsInFocus";
 import ExclusiveSection from "@/components/home/ExclusiveSection";
@@ -26,8 +27,9 @@ export default async function HomePage() {
     <main>
       <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8 py-3">
         <BreakingNewsStrip initialData={breakingNews} />
-        <div className="mt-2">
+        <div className="mt-2 space-y-2">
           <MarketTicker data={market} />
+          <StockTicker data={market} />
         </div>
 
         <div className="mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_260px]">
