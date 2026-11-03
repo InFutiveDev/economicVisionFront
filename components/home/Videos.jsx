@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
+import ComingSoon from "./ComingSoon";
 import CoverImage from "@/components/media/CoverImage";
 import SmartLink from "@/components/media/SmartLink";
+
+const COMING_SOON = true;
 
 const videos = [
   {
@@ -75,6 +78,28 @@ export default function Videos({ items, compact = false }) {
   const rest = list
     .map((video, index) => ({ video, key: keyOf(video, index) }))
     .filter((_, index) => index !== activeIndex);
+
+  if (COMING_SOON) {
+    if (compact) {
+      return (
+        <section className="h-full rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4">
+          <div className="mb-3">
+            <h2 className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-navy sm:text-[16px]">
+              Videos
+            </h2>
+          </div>
+          <ComingSoon className="min-h-[260px]" />
+        </section>
+      );
+    }
+
+    return (
+      <section>
+        <SectionHeader title="Video" cta={null} />
+        <ComingSoon className="min-h-[320px]" />
+      </section>
+    );
+  }
 
   if (!featured) return null;
 

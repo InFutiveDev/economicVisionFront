@@ -1,7 +1,10 @@
 import Link from "next/link";
 import SectionHeader from "./SectionHeader";
+import ComingSoon from "./ComingSoon";
 import CoverImage from "@/components/media/CoverImage";
 import SmartLink from "@/components/media/SmartLink";
+
+const PODCASTS_COMING_SOON = true;
 
 const fallbackPodcasts = [
   {
@@ -49,13 +52,26 @@ export default function PodcastsStories({
       {showPodcasts ? (
         compact ? (
           <div className="h-full rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4">
-            <BandHeader title="Podcasts" href="/media#podcasts" />
-            <CoverRow items={podcastItems} />
+            {PODCASTS_COMING_SOON ? (
+              <>
+                <div className="mb-3">
+                  <h2 className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-navy sm:text-[16px]">
+                    Podcasts
+                  </h2>
+                </div>
+                <ComingSoon className="min-h-[260px]" />
+              </>
+            ) : (
+              <>
+                <BandHeader title="Podcasts" href="/media#podcasts" />
+                <CoverRow items={podcastItems} />
+              </>
+            )}
           </div>
         ) : (
           <div id="podcasts" className="scroll-mt-24">
             <SectionHeader title="Podcasts" cta={null} />
-            <CoverRow items={podcastItems} />
+            {PODCASTS_COMING_SOON ? <ComingSoon className="min-h-[280px]" /> : <CoverRow items={podcastItems} />}
           </div>
         )
       ) : null}
