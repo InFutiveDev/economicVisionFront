@@ -5,6 +5,7 @@ import CoverImage from "@/components/media/CoverImage";
 import SmartLink from "@/components/media/SmartLink";
 
 const PODCASTS_COMING_SOON = true;
+const STORIES_COMING_SOON = true;
 
 const fallbackPodcasts = [
   {
@@ -79,13 +80,26 @@ export default function PodcastsStories({
       {showStories ? (
         compact ? (
           <div className="h-full rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4">
-            <BandHeader title="Stories" href="/media#stories" />
-            <CoverRow items={storyItems} />
+            {STORIES_COMING_SOON ? (
+              <>
+                <div className="mb-3">
+                  <h2 className="text-[15px] font-extrabold uppercase tracking-[0.06em] text-navy sm:text-[16px]">
+                    Stories
+                  </h2>
+                </div>
+                <ComingSoon className="min-h-[260px]" />
+              </>
+            ) : (
+              <>
+                <BandHeader title="Stories" href="/media#stories" />
+                <CoverRow items={storyItems} />
+              </>
+            )}
           </div>
         ) : (
           <div id="stories" className="scroll-mt-24">
             <SectionHeader title="Stories" cta={null} />
-            <CoverRow items={storyItems} />
+            {STORIES_COMING_SOON ? <ComingSoon className="min-h-[280px]" /> : <CoverRow items={storyItems} />}
           </div>
         )
       ) : null}
